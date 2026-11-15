@@ -82,7 +82,6 @@ public class ItemBeamMeter extends NCItem
 						player.sendMessage(message);
 						return EnumActionResult.SUCCESS;
 					}
-					
 				}
 				else
 				{
@@ -96,51 +95,29 @@ public class ItemBeamMeter extends NCItem
 							{
 								ParticleStorageBeamline beamline = (ParticleStorageBeamline) particleStorage;
 								ParticleStack stored = beamline.getParticle();
-								if (stored != null)
+
+								if(stored == null)
 								{
-									stored.addFocus(-Equations.focusLoss(beamline.getLength(), stored));
-								}
-								
-								player.sendMessage(new TextComponentString(Lang.localize("gui.qmd.particlestack.stored_now")));
-								sendParticleStackInfo(player, stored);
-								
-								if (beamline.getPreviousArrivals() == null)
-								{
-									player.sendMessage(new TextComponentString(Lang.localize("gui.qmd.particlestack.flow_waiting")));
+									sendParticleStackInfoBeamline(player, beamline.getPreviousArrivals().getStack(),beamline.getLength());
 								}
 								else
 								{
-									sendParticleFlowInfo(player, "gui.qmd.particlestack.arrived", beamline.getPreviousArrivals());
-									sendParticleFlowInfo(player, "gui.qmd.particlestack.transmitted", beamline.getPreviousTransmissions());
+									sendParticleStackInfoBeamline(player, stored,beamline.getLength());
 								}
 							}
-							else {
+							else
+							{
 								sendParticleStackInfo(player, particleStorage.getParticle());
 							}
 							
 							return EnumActionResult.SUCCESS;
 						}
-
-						
 					}
 				}
-
 			}
 		}
 
 		return EnumActionResult.PASS;
-	}
-
-	private static String getParticleStackString(ParticleStack particle, boolean includeAmount)
-	{
-		String description = TextFormatting.AQUA + Lang.localize("gui.qmd.particlestack.name", TextFormatting.WHITE + Lang.localize("qmd.particle." + particle.getParticle().getName() + ".name"));
-		
-		if (includeAmount)
-		{
-			description += " " + TextFormatting.YELLOW + Lang.localize("gui.qmd.particlestack.amount", TextFormatting.WHITE + Units.getSIFormat(particle.getAmount(), "pu"));
-		}
-		
-		return description + " " + TextFormatting.GREEN + Lang.localize("gui.qmd.particlestack.mean_energy", TextFormatting.WHITE + Units.getSIFormat(particle.getMeanEnergy(), "eV", 3)) + " " + TextFormatting.DARK_AQUA + Lang.localize("gui.qmd.particlestack.focus", TextFormatting.WHITE + new DecimalFormat("#.####").format(particle.getFocus()));
 	}
 
 	private static void sendParticleStackInfo(EntityPlayer player, ParticleStack particle)
@@ -150,25 +127,57 @@ public class ItemBeamMeter extends NCItem
 			player.sendMessage(new TextComponentString(Lang.localize("gui.qmd.particlestack.empty")));
 			return;
 		}
-		
-		player.sendMessage(new TextComponentString(getParticleStackString(particle, true)));
-		player.sendMessage(new TextComponentString(TextFormatting.DARK_AQUA + Lang.localize("gui.qmd.particlestack.focus_loss", TextFormatting.WHITE + new DecimalFormat("#.####").format(Equations.focusLoss(1, particle))) + " " + TextFormatting.GREEN + Lang.localize("gui.qmd.particlestack.travel_distance", TextFormatting.WHITE + new DecimalFormat("#.#").format(Equations.travelDistance(particle)))));
+
+		player.sendMessage(new TextComponentString(getParticleStackString(particle, true, true, false)));
+		player.sendMessage(new TextComponentString(getFocusLossString(particle, 0)));
 	}
 
-	private static void sendParticleFlowInfo(EntityPlayer player, String label, ParticleStorageBeamline.Flow flow)
+	private static void sendParticleStackInfoBeamline(EntityPlayer player, ParticleStack particle, int length)
 	{
-		String message = Lang.localize(label, Units.getSIFormat(flow.getAmount(), "pu"), flow.getPacketCount());
-		
-		if (flow.isVaried()) {
-			message += " " + Lang.localize("gui.qmd.particlestack.varied");
+		if (particle == null)
+		{
+			player.sendMessage(new TextComponentString(Lang.localize("gui.qmd.particlestack.empty")));
+			return;
+		}
+		player.sendMessage(new TextComponentString(getParticleStackString(particle, true, true, false)));
+		player.sendMessage(new TextComponentString(getFocusLossString(particle, length)));
+	}
+
+
+	private static String getParticleStackString(ParticleStack particle, boolean showAmount, boolean showEnergy, boolean showFocus)
+	{
+		String description = TextFormatting.AQUA + Lang.localize("gui.qmd.particlestack.name", TextFormatting.WHITE + Lang.localize("qmd.particle." + particle.getParticle().getName() + ".name"));
+		if(showAmount) description += " " + TextFormatting.YELLOW + Lang.localize("gui.qmd.particlestack.amount", TextFormatting.WHITE + Units.getSIFormat(particle.getAmount(), "pu"));
+		if(showEnergy) description += " " + TextFormatting.GREEN + Lang.localize("gui.qmd.particlestack.mean_energy", TextFormatting.WHITE + Units.getSIFormat(particle.getMeanEnergy(), "eV", 3));
+		if(showFocus) description += " " + TextFormatting.DARK_AQUA + Lang.localize("gui.qmd.particlestack.focus", TextFormatting.WHITE + new DecimalFormat("#.###").format(particle.getFocus()));
+
+		return description;
+	}
+
+	private static String getFocusLossString(ParticleStack particleIn, int distance)
+	{
+		double focusLoss = Equations.focusLoss(distance, particleIn);
+		ParticleStack particleOut = particleIn.copy();
+
+		String description = "";
+		if (distance>0)
+		{
+			particleOut.addFocus(-focusLoss);
+			description += TextFormatting.DARK_AQUA + Lang.localize("gui.qmd.particlestack.focus_in_out", TextFormatting.BLUE + new DecimalFormat("#.###").format(particleIn.getFocus())+TextFormatting.WHITE,TextFormatting.RED + new DecimalFormat("#.###").format(particleOut.getFocus()));
 		}
 		else
 		{
-			ParticleStack sample = flow.getStack();
-			if (sample != null) message += " " + getParticleStackString(sample, false);
+			description += TextFormatting.DARK_AQUA + Lang.localize("gui.qmd.particlestack.focus", TextFormatting.WHITE + new DecimalFormat("#.###").format(particleIn.getFocus()));
 		}
-		
-		player.sendMessage(new TextComponentString(message));
+		description += " " +TextFormatting.LIGHT_PURPLE + Lang.localize("gui.qmd.particlestack.focus_loss", TextFormatting.WHITE + new DecimalFormat("#.###").format(Equations.focusLoss(1, particleOut)));
+		description += "\n" + TextFormatting.GREEN + Lang.localize("gui.qmd.particlestack.travel_distance", TextFormatting.WHITE + new DecimalFormat("#.#").format(Equations.travelDistance(particleOut)));
+
+
+		return description;
 	}
+
+
+
+
 	
 }

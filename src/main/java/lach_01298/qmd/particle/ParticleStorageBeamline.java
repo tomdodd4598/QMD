@@ -37,6 +37,11 @@ public class ParticleStorageBeamline extends ParticleStorage
 		currentArrivals = currentTransmissions = null;
 	}
 
+	public void clear()
+	{
+		this.particleStack = null;
+	}
+
 	public void clearFlow()
 	{
 		currentArrivals = currentTransmissions = previousArrivals = previousTransmissions = null;

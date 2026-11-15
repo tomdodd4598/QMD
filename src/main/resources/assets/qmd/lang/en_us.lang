@@ -356,7 +356,7 @@ tile.qmd.creative_particle_source.name=Creative Particle Source
 
 //guide book
 qmd.guide_book.name=QMD Guide
-qmd.guide_book.edition=Version 1.6
+qmd.guide_book.edition=Version 1.6.2
 qmd.guide_book.desc=This is a Guide to Quantum Minecraft Dynamics.
 
 
@@ -922,14 +922,10 @@ gui.qmd.particlestack.name=Type: %s
 gui.qmd.particlestack.amount=Amount: %s
 gui.qmd.particlestack.mean_energy=Energy: %s
 gui.qmd.particlestack.focus=Focus: %s
+gui.qmd.particlestack.focus_in_out=Focus In/Out: %s/%s
 gui.qmd.particlestack.focus_loss=Focus Loss: %s/Block
-gui.qmd.particlestack.travel_distance=Travel Distance: %s Blocks
+gui.qmd.particlestack.travel_distance=Distance Can Travel: %s Blocks
 gui.qmd.particlestack.empty=No Particles
-gui.qmd.particlestack.stored_now=Stored now (projected at beamline exit):
-gui.qmd.particlestack.flow_waiting=Previous tick: no complete measurement available (requires an assembled beamline).
-gui.qmd.particlestack.arrived=Previous completed tick - arrived: %s in %s packet(s).
-gui.qmd.particlestack.transmitted=Previous completed tick - transmitted: %s in %s packet(s).
-gui.qmd.particlestack.varied=(Varied packet types, energies or focus; no single value.)
 
 //jei
 qmd.gui.jei.category.accelerator_source=Ion Source

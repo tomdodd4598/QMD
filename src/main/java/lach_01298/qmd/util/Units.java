@@ -126,7 +126,7 @@ public class Units
 
 	public static String formatFocus(double number)
 	{
-		DecimalFormat df = new DecimalFormat("#.####");
+		DecimalFormat df = new DecimalFormat("#.###");
 		return df.format(number);
 	}
 
